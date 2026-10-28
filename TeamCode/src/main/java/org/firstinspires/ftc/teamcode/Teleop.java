@@ -165,7 +165,7 @@ public class Teleop extends LinearOpMode {
                 if (gamepad2.b) {
                     intakePower = -INTAKE_REVERSE_POWER;
                 }
-                intakeMotor.setPower(intakePower);
+                //intakeMotor.setPower(intakePower);
 
                 // =====================================
                 // PLAYER 2: TRANSFER
@@ -180,7 +180,7 @@ public class Teleop extends LinearOpMode {
                 } else if (gamepad2.left_bumper && !gamepad2.right_bumper) {
                     transferPower = -TRANSFER_REVERSE_POWER;
                 }
-                transferMotor.setPower(transferPower);
+                //transferMotor.setPower(transferPower);
 
                 // =====================================
                 // PLAYER 2: SHOOTER (RIGHT TRIGGER)
@@ -189,11 +189,11 @@ public class Teleop extends LinearOpMode {
 
                 boolean shooterHeld = gamepad2.right_trigger > 0.05;
 
-                if (shooterHeld) {
-                    shooterMotor.setVelocity(targetTicksPerSecond);
-                } else {
-                    shooterMotor.setPower(0.0);
-                }
+                // if (shooterHeld) {
+                //     shooterMotor.setVelocity(targetTicksPerSecond);
+                // } else {
+                //     shooterMotor.setPower(0.0);
+                // }
 
                 // =====================================
                 // DRIVER STATION TELEMETRY
