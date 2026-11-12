@@ -11,10 +11,9 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 
 @TeleOp
 public class Teleop extends LinearOpMode {
-    // ---- Shooter ----
     private static final double SHOOTER_TICKS_PER_REV = 28.0;
     private static final double SHOOTER_RPM = 4500.0;
-    private static final double SHOOTER_REVERSE_RPM = 500.0;
+    private static final double SHOOTER_REVERSE_RPM = 1000.0;
     private static final double SHOOTER_STOPPED_RPM = 30.0;
 
     private static final double SHOOTER_MOTOR_TURNS_PER_FLYWHEEL_TURN = 1.0;
@@ -27,7 +26,6 @@ public class Teleop extends LinearOpMode {
 
     private static final double INTAKE_TICKS_PER_REV = 537.7;
     private static final double INTAKE_RPM = 312.0;
-    private static final double OUTTAKE_RPM = 312.0;
     private static final DcMotorSimple.Direction INTAKE_DIRECTION = DcMotorSimple.Direction.REVERSE;
 
     @Override
@@ -42,8 +40,8 @@ public class Teleop extends LinearOpMode {
         DcMotorEx transferMotor = hardwareMap.get(DcMotorEx.class, "transferMotor");
         DcMotorEx intakeMotor = hardwareMap.get(DcMotorEx.class, "intakeMotor");
 
-        frontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        backRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        backLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         shooterMotor.setDirection(SHOOTER_DIRECTION);
         shooterMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -65,17 +63,16 @@ public class Teleop extends LinearOpMode {
         double transferReverseTPS = TRANSFER_REVERSE_RPM * TRANSFER_TICKS_PER_REV / 60.0;
 
         double intakeTPS = INTAKE_RPM * INTAKE_TICKS_PER_REV / 60.0;
-        double outtakeTPS = OUTTAKE_RPM * INTAKE_TICKS_PER_REV / 60.0;
 
         IMU imu = hardwareMap.get(IMU.class, "imu");
         imu.initialize(new IMU.Parameters(
                 new RevHubOrientationOnRobot(
-                        RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                        RevHubOrientationOnRobot.UsbFacingDirection.FORWARD)));
+                        RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
+                        RevHubOrientationOnRobot.UsbFacingDirection.UP)));
 
         telemetry.addLine("BioBuzz TeleOp Ready");
         telemetry.addLine("P1: Drive");
-        telemetry.addLine("P2: LT Intake, LB Outtake, RT Shoot, RB Reverse Flywheel, B Transfer, X Transfer Reverse");
+        telemetry.addLine("P2: LT Intake (also runs Transfer + reverses Flywheel), RT Shoot, RB Reverse Flywheel, B Transfer, X Transfer Reverse");
         telemetry.update();
 
         try {
@@ -107,25 +104,30 @@ public class Teleop extends LinearOpMode {
                 frontRightMotor.setPower((rotY - rotX - rx) / denominator);
                 backRightMotor.setPower((rotY + rotX - rx) / denominator);
 
+                // Intake
                 boolean intakeHeld = gamepad2.left_trigger > 0.05;
-                if (intakeHeld && !gamepad2.left_bumper) {
+                boolean intakeActive = false;
+                if (intakeHeld) {
                     intakeMotor.setVelocity(intakeTPS);
-                } else if (gamepad2.left_bumper && !intakeHeld) {
-                    intakeMotor.setVelocity(-outtakeTPS);
+                    intakeActive = true;
                 } else {
                     intakeMotor.setPower(0.0);
                 }
 
+                // Transfer: manual B/X takes priority, otherwise runs with the intake
                 if (gamepad2.b && !gamepad2.x) {
                     transferMotor.setVelocity(transferFeedTPS);
                 } else if (gamepad2.x && !gamepad2.b) {
                     transferMotor.setVelocity(-transferReverseTPS);
+                } else if (intakeActive) {
+                    transferMotor.setVelocity(transferFeedTPS);
                 } else {
                     transferMotor.setPower(0.0);
                 }
 
+                // Shooter: RT shoots (priority), RB or intake reverses once flywheel has stopped
                 boolean shooterHeld = gamepad2.right_trigger > 0.05;
-                boolean shooterReverseHeld = gamepad2.right_bumper;
+                boolean shooterReverseHeld = gamepad2.right_bumper || intakeActive;
                 boolean flywheelSpinningForward = shooterMotor.getVelocity() > shooterStoppedTPS;
                 boolean reverseActive = false;
 
