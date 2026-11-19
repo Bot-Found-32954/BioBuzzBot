@@ -22,7 +22,7 @@ public class Teleop extends LinearOpMode {
     static final double SHOOTER_TICKS_PER_REV = 28.0;
 
     static final double DRIVE_MAX_RPM           = 190;
-    static final double SHOOTER_MAX_RPM         = 3750;
+    static final double SHOOTER_MAX_RPM         = 3900;
 
     static final double TRANSFER_SPEED_MULTIPLIER = 1.0;
     static final double SHOOTER_REVERSE_MAX_RPM = 700;
@@ -106,7 +106,7 @@ public class Teleop extends LinearOpMode {
             double rotY = x * Math.sin(-botHeading) + y * Math.cos(-botHeading);
 
 
-            rotX = rotX * 1.1;  // Counteract imperfect strafing
+            //rotX = rotX * 1.1;  // Counteract imperfect strafing
 
             // Denominator is the largest motor power (absolute value) or 1
             // This ensures all the powers maintain the same ratio,
